@@ -20,7 +20,7 @@ Get a key: https://console.groq.com/keys
 If a key was ever committed or pasted somewhere public, revoke it in the provider console and make a new one.
 
 ## Providers
-`AGENT_PROVIDERS=groq,openrouter,ollama` is the order tried. A provider without a key is skipped.
+`AGENT_PROVIDERS=groq,groq-fallback,openrouter,ollama` is the order tried (`groq-fallback` = a second Groq model, `GROQ_FALLBACK_MODEL`). A provider without a key is skipped.
 On 429/5xx the agent retries once, then falls through to the next provider.
 
 ## Voice

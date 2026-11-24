@@ -64,11 +64,12 @@ class Brain:
         for name, p in providers:
             for attempt in range(2):
                 try:
-                    r = requests.post(
-                        f"{p['base_url']}/chat/completions",
-                        headers={"Authorization": f"Bearer {p['key']}"},
-                        json={"model": p["model"], "messages": messages, "tools": tools, "temperature": 0.1},
-                        timeout=60)
+                    payload = {"model": p["model"], "messages": messages, "tools": tools, "temperature": 0.1}
+                    if p.get("reasoning_effort"):
+                        payload["reasoning_effort"] = p["reasoning_effort"]
+                    r = requests.post(f"{p['base_url']}/chat/completions",
+                                      headers={"Authorization": f"Bearer {p['key']}"},
+                                      json=payload, timeout=60)
                 except requests.RequestException as e:
                     last = f"{name}: {type(e).__name__}"
                     break                                             # next provider

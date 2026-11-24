@@ -29,11 +29,22 @@ def env(name: str, default: str = "") -> str:
 
 # ---------- LLM providers ----------
 def active_providers() -> list[tuple[str, dict]]:
-    """Providers in preferred order that are usable (have a key)."""
+    """Providers in preferred order that are usable (have a key).
+    'groq-fallback' is a second Groq model: Groq rate-limits per model, so it works as a cheap backup."""
+    groq_key = env("GROQ_API_KEY")
+    effort = env("GROQ_REASONING_EFFORT", "low")          # low | medium | high (gpt-oss models only)
+
+    def groq(model: str) -> dict:
+        p = {"base_url": "https://api.groq.com/openai/v1", "key": groq_key if model else "", "model": model}
+        if model.startswith("openai/gpt-oss") and effort:
+            p["reasoning_effort"] = effort
+        return p
+
+    primary = env("GROQ_MODEL", "openai/gpt-oss-120b")
+    backup = env("GROQ_FALLBACK_MODEL", "openai/gpt-oss-20b")
     table = {
-        "groq": {"base_url": "https://api.groq.com/openai/v1",
-                 "key": env("GROQ_API_KEY"),
-                 "model": env("GROQ_MODEL", "llama-3.3-70b-versatile")},
+        "groq": groq(primary),
+        "groq-fallback": groq("" if backup == primary else backup),
         "openrouter": {"base_url": "https://openrouter.ai/api/v1",
                        "key": env("OPENROUTER_API_KEY"),
                        "model": env("OPENROUTER_MODEL", "meta-llama/llama-3.3-70b-instruct:free")},
@@ -41,7 +52,7 @@ def active_providers() -> list[tuple[str, dict]]:
                    "key": "ollama",
                    "model": env("OLLAMA_MODEL", "llama3.2")},
     }
-    order = [p.strip() for p in env("AGENT_PROVIDERS", "groq,openrouter,ollama").split(",")]
+    order = [p.strip() for p in env("AGENT_PROVIDERS", "groq,groq-fallback,openrouter,ollama").split(",")]
     return [(n, table[n]) for n in order if n in table and table[n]["key"]]
 
 
@@ -52,7 +63,7 @@ PREFERRED_BROWSER = env("AGENT_BROWSER", "brave")      # brave | chrome | chromi
 
 # ---------- Speech to text ----------
 STT_BACKEND = env("STT_BACKEND", "groq")               # groq | local
-GROQ_STT_MODEL = env("GROQ_STT_MODEL", "whisper-large-v3-turbo")
+GROQ_STT_MODEL = env("GROQ_STT_MODEL", "whisper-large-v3")      # or whisper-large-v3-turbo
 LOCAL_STT_MODEL = env("LOCAL_STT_MODEL", "base")
 LOCAL_STT_DEVICE = env("LOCAL_STT_DEVICE", "cpu")
 STT_LANGUAGE = env("STT_LANGUAGE", "en")               # empty = auto-detect

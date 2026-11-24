@@ -75,3 +75,9 @@ VAD_MIN_SPEECH_MS = int(env("VAD_MIN_SPEECH_MS", "300"))
 VAD_PREROLL_MS = int(env("VAD_PREROLL_MS", "300"))     # audio kept from before speech was detected
 MAX_UTTERANCE_S = int(env("MAX_UTTERANCE_S", "15"))
 MIC_DEVICE = env("MIC_DEVICE") or None
+
+# ---------- Text to speech ----------
+TTS_BACKEND = env("TTS_BACKEND", "edge")                 # edge | espeak | off
+TTS_VOICE = env("TTS_VOICE", "en-IN-NeerjaNeural")       # run: python -m edge_tts --list-voices
+TTS_RATE = env("TTS_RATE", "+0%")                        # e.g. +10% faster, -10% slower
+ESPEAK_VOICE = env("ESPEAK_VOICE", "en-us")              # offline fallback voice (hi for Hindi)

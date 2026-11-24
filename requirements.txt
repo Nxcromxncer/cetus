@@ -3,5 +3,6 @@ psutil
 numpy
 sounddevice
 pysilero-vad
+edge-tts
 # optional, only for STT_BACKEND=local:
 # faster-whisper

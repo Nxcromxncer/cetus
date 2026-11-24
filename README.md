@@ -4,13 +4,14 @@ Voice-controlled agent for Arch Linux: LLM brain (Groq / OpenRouter / Ollama), t
 
 ## Setup
 ```bash
-sudo pacman -S python portaudio brightnessctl tmux yt-dlp kitty    # kitty = any terminal you like
+sudo pacman -S python portaudio brightnessctl tmux yt-dlp kitty mpv espeak-ng    # kitty = any terminal you like
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
 cp .env.example .env && chmod 600 .env       # then put your GROQ_API_KEY in .env
 python main.py                               # text mode
 python mic_test.py                           # check mic + VAD + STT
+python tts_test.py                           # check the agent can speak
 python main_voice.py                         # voice mode
 ```
 Get a key: https://console.groq.com/keys
@@ -28,6 +29,7 @@ Mic -> Silero VAD (finds start/end of speech) -> STT -> brain.
 - `STT_BACKEND=groq` (default): Whisper via Groq API.
 - `STT_BACKEND=local`: `pip install faster-whisper`, set `LOCAL_STT_MODEL=base` (or small).
 - Tune VAD with `VAD_THRESHOLD` (higher = less sensitive) and `VAD_SILENCE_MS` (pause that ends a sentence).
+- Replies are spoken with `audio/tts.py` (edge-tts voices, espeak-ng offline fallback). The mic is not read while the agent speaks, so it can't hear itself.
 - Risky actions (shell commands) need a spoken "yes"; the prompt is shown on screen until TTS is added.
 
 ## Add a capability
@@ -39,7 +41,7 @@ def my_tool(arg: int): ...
 ```
 
 ## Roadmap
-1. done: brain, registry, safety, system tools, browser, terminal, providers, VAD, STT
-2. TTS (Piper) + mute mic while speaking + voice "stop"
+1. done: brain, registry, safety, system tools, browser, terminal, providers, VAD, STT, TTS
+2. voice "stop"/barge-in (interrupt while it is speaking), optional Piper for fully offline TTS
 3. memory (SQLite), zplay/music control, news/calendar/search skills
 4. wake word, tool retriever, browser control via CDP, computer-use fallback

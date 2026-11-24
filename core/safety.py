@@ -10,10 +10,11 @@ DENY_PATTERNS = [
 
 
 def check(tool, args: dict) -> str:
-    """Returns 'allow', 'confirm' or 'deny'."""
-    if tool.name == "run_shell":
-        cmd = args.get("command", "")
-        if any(re.search(p, cmd) for p in DENY_PATTERNS):
+    """Returns 'allow', 'confirm' or 'deny'.
+    Any tool that carries a shell `command` is screened and needs confirmation."""
+    cmd = args.get("command")
+    if tool.name == "run_shell" or (isinstance(cmd, str) and cmd.strip()):
+        if any(re.search(p, cmd or "") for p in DENY_PATTERNS):
             return "deny"
         return "confirm"
     if tool.risk == "high":

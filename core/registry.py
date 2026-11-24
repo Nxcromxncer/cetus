@@ -53,12 +53,34 @@ def load_plugins(packages=("actions", "skills")):
             importlib.import_module(f"{pkg_name}.{m.name}")
 
 
+def _coerce(schema: dict, args: dict) -> dict:
+    """Fix types the LLM got slightly wrong and drop arguments the tool doesn't have."""
+    props, out = schema["properties"], {}
+    for k, v in args.items():
+        if k not in props:
+            continue
+        kind = props[k].get("type")
+        try:
+            if kind == "integer" and not isinstance(v, bool):
+                v = int(float(v))
+            elif kind == "number":
+                v = float(v)
+            elif kind == "boolean" and isinstance(v, str):
+                v = v.strip().lower() in ("true", "1", "yes", "on")
+            elif kind == "string" and not isinstance(v, str):
+                v = str(v)
+        except (ValueError, TypeError):
+            pass
+        out[k] = v
+    return out
+
+
 def call(name: str, args: dict) -> dict:
     t = TOOLS.get(name)
     if not t:
         return {"error": f"unknown tool '{name}'"}
     try:
-        out = t.fn(**args)
+        out = t.fn(**_coerce(t.schema, args))
         return out if isinstance(out, dict) else {"result": out}
     except TypeError as e:
         return {"error": f"bad arguments: {e}"}

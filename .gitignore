@@ -1,0 +1,22 @@
+# secrets
+.env
+.env.*
+!.env.example
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# runtime / local data
+*.log
+*.wav
+.cache/
+models/
+.pytest_cache/
+
+# editors / os
+.idea/
+.vscode/
+.DS_Store

@@ -1,30 +1,45 @@
-# arch-agent
+# arch-agent v2
 
-Phase 1: text-only brain + tool registry + safety gate for Arch Linux.
+Voice-controlled agent for Arch Linux: LLM brain (Groq / OpenRouter / Ollama), tools, VAD + STT.
 
 ## Setup
-    sudo pacman -S python python-psutil python-requests brightnessctl yt-dlp pipewire-pulse wireplumber ollama
-    ollama serve &            # or: sudo systemctl enable --now ollama
-    ollama pull llama3.2
-    python main.py
+```bash
+sudo pacman -S python portaudio brightnessctl tmux yt-dlp kitty    # kitty = any terminal you like
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
 
-Use another model/provider: AGENT_BASE_URL, AGENT_MODEL, AGENT_API_KEY.
+cp .env.example .env && chmod 600 .env       # then put your GROQ_API_KEY in .env
+python main.py                               # text mode
+python mic_test.py                           # check mic + VAD + STT
+python main_voice.py                         # voice mode
+```
+Get a key: https://console.groq.com/keys
 
-Browser (Brave is AUR): `yay -S brave-bin`. Choose default browser: `AGENT_BROWSER=chrome`.
+## Keys and git
+`.env` is in `.gitignore`. Before your first commit run `git status` and confirm `.env` is NOT listed.
+If a key was ever committed or pasted somewhere public, revoke it in the provider console and make a new one.
+
+## Providers
+`AGENT_PROVIDERS=groq,openrouter,ollama` is the order tried. A provider without a key is skipped.
+On 429/5xx the agent retries once, then falls through to the next provider.
+
+## Voice
+Mic -> Silero VAD (finds start/end of speech) -> STT -> brain.
+- `STT_BACKEND=groq` (default): Whisper via Groq API.
+- `STT_BACKEND=local`: `pip install faster-whisper`, set `LOCAL_STT_MODEL=base` (or small).
+- Tune VAD with `VAD_THRESHOLD` (higher = less sensitive) and `VAD_SILENCE_MS` (pause that ends a sentence).
+- Risky actions (shell commands) need a spoken "yes"; the prompt is shown on screen until TTS is added.
 
 ## Add a capability
 Drop a file in `actions/` or `skills/`:
-
-    from core.registry import tool
-    @tool("What it does and when to use it.", risk="low")
-    def my_tool(arg: int): ...
-
-Restart. The brain picks it up automatically.
+```python
+from core.registry import tool
+@tool("What it does and when to use it.", risk="low")
+def my_tool(arg: int): ...
+```
 
 ## Roadmap
-1. (done) brain, registry, safety, volume/brightness/battery/apps/shell
-2. memory.py (SQLite facts + preferences)
-3. audio/: Silero VAD -> faster-whisper STT -> Piper TTS
-4. skills: news, calendar, web search
-5. tool retriever (embeddings) once >30 tools
-6. wake word, computer-use fallback (screenshots)
+1. done: brain, registry, safety, system tools, browser, terminal, providers, VAD, STT
+2. TTS (Piper) + mute mic while speaking + voice "stop"
+3. memory (SQLite), zplay/music control, news/calendar/search skills
+4. wake word, tool retriever, browser control via CDP, computer-use fallback

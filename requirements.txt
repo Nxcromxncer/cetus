@@ -1,2 +1,7 @@
 requests
 psutil
+numpy
+sounddevice
+pysilero-vad
+# optional, only for STT_BACKEND=local:
+# faster-whisper

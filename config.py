@@ -81,3 +81,5 @@ TTS_BACKEND = env("TTS_BACKEND", "edge")                 # edge | espeak | off
 TTS_VOICE = env("TTS_VOICE", "en-IN-NeerjaNeural")       # run: python -m edge_tts --list-voices
 TTS_RATE = env("TTS_RATE", "+0%")                        # e.g. +10% faster, -10% slower
 ESPEAK_VOICE = env("ESPEAK_VOICE", "en-us")              # offline fallback voice (hi for Hindi)
+TTS_DEBUG = env("TTS_DEBUG") == "1"                      # print what the speaker is doing
+SPEAKER_DEVICE = env("SPEAKER_DEVICE") or None           # sounddevice output index/name; see: python -m sounddevice

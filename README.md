@@ -4,7 +4,7 @@ Voice-controlled agent for Arch Linux: LLM brain (Groq / OpenRouter / Ollama), t
 
 ## Setup
 ```bash
-sudo pacman -S python portaudio brightnessctl tmux yt-dlp kitty mpv espeak-ng    # kitty = any terminal you like
+sudo pacman -S python portaudio brightnessctl tmux yt-dlp kitty espeak-ng    # kitty = any terminal you like
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
@@ -45,3 +45,8 @@ def my_tool(arg: int): ...
 2. voice "stop"/barge-in (interrupt while it is speaking), optional Piper for fully offline TTS
 3. memory (SQLite), zplay/music control, news/calendar/search skills
 4. wake word, tool retriever, browser control via CDP, computer-use fallback
+
+## Troubleshooting voice output
+`TTS_DEBUG=1 python tts_test.py` shows each step. Playback uses sounddevice (no external player); mpv/ffplay/mpg123
+are only a fallback and are killed if they hang. If you hear nothing, test the basics: `espeak-ng "hello"`,
+`wpctl status` (is the right Sink the default?), and set `SPEAKER_DEVICE` (see `python -m sounddevice`).

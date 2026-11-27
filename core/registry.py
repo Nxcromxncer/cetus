@@ -85,4 +85,4 @@ def call(name: str, args: dict) -> dict:
     except TypeError as e:
         return {"error": f"bad arguments: {e}"}
     except Exception as e:
-        return {"error": f"{type(e).__name__}: {e}"}
+        return {"error": f"{type(e).__name__}: {str(e)[:300]}"}

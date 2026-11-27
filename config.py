@@ -56,7 +56,7 @@ def active_providers() -> list[tuple[str, dict]]:
     return [(n, table[n]) for n in order if n in table and table[n]["key"]]
 
 
-MAX_STEPS = 10          # agent loop cap
+MAX_STEPS = 14          # agent loop cap
 HISTORY_TURNS = 8       # past user/assistant exchanges kept
 LOG_PATH = os.path.expanduser("~/.local/share/arch-agent/actions.log")
 PREFERRED_BROWSER = env("AGENT_BROWSER", "brave")      # brave | chrome | chromium
@@ -83,3 +83,8 @@ TTS_RATE = env("TTS_RATE", "+0%")                        # e.g. +10% faster, -10
 ESPEAK_VOICE = env("ESPEAK_VOICE", "en-us")              # offline fallback voice (hi for Hindi)
 TTS_DEBUG = env("TTS_DEBUG") == "1"                      # print what the speaker is doing
 SPEAKER_DEVICE = env("SPEAKER_DEVICE") or None           # sounddevice output index/name; see: python -m sounddevice
+
+# ---------- Browser control ----------
+BROWSER_CONTROL = env("BROWSER_CONTROL", "1") != "0"     # 0 = plain launch only (no click/type control)
+BROWSER_EXTRA_ARGS = env("BROWSER_EXTRA_ARGS")           # extra Chromium flags, space separated
+GITHUB_USER = env("GITHUB_USER")                         # your GitHub username (lets "open repo X" find your repos)

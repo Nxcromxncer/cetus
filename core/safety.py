@@ -9,6 +9,11 @@ DENY_PATTERNS = [
 ]
 
 
+SENSITIVE_CLICK = re.compile(
+    r"\b(delete|remove|purchase|buy now|buy|pay|payment|place order|checkout|transfer|withdraw|"
+    r"deactivate|close account|send money|confirm order)\b", re.I)
+
+
 def check(tool, args: dict) -> str:
     """Returns 'allow', 'confirm' or 'deny'.
     Any tool that carries a shell `command` is screened and needs confirmation."""
@@ -17,6 +22,10 @@ def check(tool, args: dict) -> str:
         if any(re.search(p, cmd or "") for p in DENY_PATTERNS):
             return "deny"
         return "confirm"
+    if tool.name in ("browser_click", "browser_type"):
+        from core import browserctl
+        if SENSITIVE_CLICK.search(browserctl.describe(args.get("index"))):
+            return "confirm"
     if tool.risk == "high":
         return "confirm"
     return "allow"

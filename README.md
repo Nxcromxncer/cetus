@@ -6,7 +6,7 @@ Voice-controlled agent for Arch Linux: LLM brain (Groq / OpenRouter / Ollama), t
 ```bash
 sudo pacman -S python portaudio brightnessctl tmux yt-dlp kitty espeak-ng    # kitty = any terminal you like
 python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements.txt     # includes playwright (no browser download needed)
 
 cp .env.example .env && chmod 600 .env       # then put your GROQ_API_KEY in .env
 python main.py                               # text mode
@@ -32,6 +32,20 @@ Mic -> Silero VAD (finds start/end of speech) -> STT -> brain.
 - Replies are spoken with `audio/tts.py` (edge-tts voices, espeak-ng offline fallback). The mic is not read while the agent speaks, so it can't hear itself.
 - Risky actions (shell commands) need a spoken "yes"; the prompt is shown on screen until TTS is added.
 
+## Browser control (new)
+The agent drives its **own** Brave/Chrome window (separate profile, so your everyday profile is never touched).
+- First run: it opens that window. **Sign in once** to YouTube / GitHub / LeetCode there; logins are remembered
+  in `~/.local/share/arch-agent/browser/`.
+- How it works: `browser_look` numbers every visible clickable/typeable element, the model picks a number,
+  and the code clicks it with real mouse events (`browser_click`), types (`browser_type`), scrolls, reads, switches tabs.
+  Shortcuts: `youtube_play`, `youtube_subscribe`, `media_control` (pause / next / mute...), `github_repo`.
+- Try: "open brave and play mango shake", "subscribe to this channel", "pause", "open leetcode",
+  "open my arch-agent repo on github" (set `GITHUB_USER` in `.env`), "search github for playwright and open the first result".
+- Safety: clicks on buttons like Delete / Buy / Pay need a spoken "yes"; passwords are never typed; page text is
+  treated as untrusted data. Set `BROWSER_CONTROL=0` to go back to plain window launching.
+- It listens on `127.0.0.1` only (ports 9222 brave, 9223 chrome, 9224 chromium).
+- If Brave opens but control fails: close any agent-browser window left from an earlier run and retry.
+
 ## Add a capability
 Drop a file in `actions/` or `skills/`:
 ```python
@@ -44,7 +58,7 @@ def my_tool(arg: int): ...
 1. done: brain, registry, safety, system tools, browser, terminal, providers, VAD, STT, TTS
 2. voice "stop"/barge-in (interrupt while it is speaking), optional Piper for fully offline TTS
 3. memory (SQLite), zplay/music control, news/calendar/search skills
-4. wake word, tool retriever, browser control via CDP, computer-use fallback
+4. wake word, tool retriever (34 tools now), computer-use fallback (screenshots + OS-level mouse for non-browser apps)
 
 ## Troubleshooting voice output
 `TTS_DEBUG=1 python tts_test.py` shows each step. Playback uses sounddevice (no external player); mpv/ffplay/mpg123
